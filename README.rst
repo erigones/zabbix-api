@@ -30,10 +30,10 @@ Usage
     zx.login('username', 'password')
 
     # Example: list zabbix users
-    zx.call('user.get', {'output': 'extend'})
+    zx.call('user.get', {'output': zx.QUERY_EXTEND})
 
     # Or use the old dot notation method
-    zx.user.get({'output': 'extend'})
+    zx.user.get({'output': zx.QUERY_EXTEND})
 
 Links
 -----

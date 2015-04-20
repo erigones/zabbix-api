@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 This is a port of the ruby zabbix api found here:
 http://trac.red-tux.net/browser/ruby/api/zbx_api.rb
@@ -47,6 +48,9 @@ except ImportError:
     # noinspection PyUnresolvedReferences,PyPep8Naming
     import urllib.request as urllib2  # python3
 
+__all__ = ('ZabbixAPI', 'ZabbixAPIException', 'ZabbixAPIError')
+__version__ = '1.0.1'
+
 PARENT_LOGGER = __name__
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 TRIGGER_SEVERITY = (
@@ -61,7 +65,6 @@ RE_HIDE_AUTH = (
     (re.compile(r'("auth": )".*?"'), r'\1"***"'),
     (re.compile(r'("password": )".*?"'), r'\1"***"'),
 )
-RELOGIN_INTERVAL = 60  # seconds
 
 
 def hide_auth(msg):
@@ -83,6 +86,7 @@ class ZabbixAPIException(Exception):
 class ZabbixAPIError(ZabbixAPIException):
     """
     Structured zabbix API error. Used for Zabbix API errors.
+    The error attribute is always a dict with "code", "message" and "data" keys.
 
     Code list:
          -32602 - Invalid params (eg already exists)
@@ -109,8 +113,14 @@ class ZabbixAPI(object):
     id = 0
     last_login = None
 
+    QUERY_EXTEND = 'extend'
+    QUERY_COUNT = 'count'
+
+    SORT_ASC = 'ASC'
+    SORT_DESC = 'DESC'
+
     def __init__(self, server='http://localhost/zabbix', user=None, passwd=None, log_level=WARNING, timeout=10,
-                 relogin_enabled=True, r_query_len=10):
+                 relogin_interval=60, r_query_len=10):
         """
         Create an API object. We're going to use proto://server/path to find the JSON-RPC api.
 
@@ -118,8 +128,10 @@ class ZabbixAPI(object):
         :param str user: Optional HTTP auth username
         :param str passwd: Optional HTTP auth password
         :param int log_level: Logging level
-        :param int timeout: Timeout for HTTP requests to api
+        :param int timeout: Timeout for HTTP requests to api (in seconds)
         :param int r_query_len: Max length of query history
+        :param int relogin_interval: Minimum time (in seconds) after which an automatic re-login is performed; \
+         Can be set to None to disable automatic re-logins
         """
         self.logger = getLogger(PARENT_LOGGER)
         self.set_log_level(log_level)
@@ -127,7 +139,7 @@ class ZabbixAPI(object):
         self.httpuser = user
         self.httppasswd = passwd
         self.timeout = timeout
-        self.relogin_enabled = relogin_enabled
+        self.relogin_interval = relogin_interval
         self.r_query = deque(maxlen=r_query_len)
         self.init()
 
@@ -314,9 +326,9 @@ class ZabbixAPI(object):
     def check_auth(self):
         """Perform a re-login if not signed in or raise an exception"""
         if not self.logged_in:
-            if self.relogin_enabled and self.last_login and (time() - self.last_login) > RELOGIN_INTERVAL:
+            if self.relogin_interval and self.last_login and (time() - self.last_login) > self.relogin_interval:
                 self.log(WARNING, 'Zabbix API not logged in. Performing Zabbix API relogin after %d seconds',
-                         RELOGIN_INTERVAL)
+                         self.relogin_interval)
                 self.relogin()  # Will raise exception in case of login error
             else:
                 raise ZabbixAPIException('Not logged in.')

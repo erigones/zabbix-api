@@ -13,6 +13,9 @@ try:
 except ImportError:
     from distutils.core import setup
 
+# noinspection PyPep8Naming
+from zabbix_api import __version__ as VERSION
+
 read = lambda fname: open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 CLASSIFIERS = [
@@ -32,7 +35,7 @@ CLASSIFIERS = [
 
 setup(
     name='zabbix-api-erigones',
-    version='1.0',
+    version=VERSION,
     description='Zabbix API Python Library',
     long_description=read('README.rst'),
     url='https://github.com/erigones/zabbix-api/',
