@@ -38,6 +38,6 @@ Usage
 Links
 -----
 
-- Bug Tracker: https://github.com/erigones/zabbix-api-erigones/issues
+- Bug Tracker: https://github.com/erigones/zabbix-api/issues
 - Twitter: https://twitter.com/erigones
 
