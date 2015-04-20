@@ -1,9 +1,9 @@
 zabbix-api-erigones
 ###################
 
-`Zabbix API<https://www.zabbix.com/documentation/2.4/manual/api>`_ Python Library.
+`Zabbix API <https://www.zabbix.com/documentation/2.4/manual/api>`_ Python Library.
 
-Used by the `Ludolph Monitoring Jabber Bot<https://github.com/erigones/Ludolph>`_.
+Used by the `Ludolph Monitoring Jabber Bot <https://github.com/erigones/Ludolph>`_.
 
 * Supported Python versions: >= 2.6 and >= 3.2
 * Supported Zabbix versions: 1.8, 2.0, 2.2, 2.4
@@ -15,25 +15,25 @@ Used by the `Ludolph Monitoring Jabber Bot<https://github.com/erigones/Ludolph>`
 Installation
 ------------
 
-```bash
-pip install zabbix-api-erigones
-```
+.. code:: bash
+
+    pip install zabbix-api-erigones
 
 Usage
 -----
 
-```python
-from zabbix_api import ZabbixAPI
+.. code:: python
 
-zx = ZabbixAPI(server='http://127.0.0.1')
-zx.login('username', 'password')
+    from zabbix_api import ZabbixAPI
 
-# Example: list zabbix users
-zx.call('user.get', {'output': 'extend'})
+    zx = ZabbixAPI(server='http://127.0.0.1')
+    zx.login('username', 'password')
 
-# Or use the old dot notation method
-zx.user.get({'output': 'extend'})
-```
+    # Example: list zabbix users
+    zx.call('user.get', {'output': 'extend'})
+
+    # Or use the old dot notation method
+    zx.user.get({'output': 'extend'})
 
 Links
 -----
