@@ -49,7 +49,7 @@ except ImportError:
     import urllib.request as urllib2  # python3
 
 __all__ = ('ZabbixAPI', 'ZabbixAPIException', 'ZabbixAPIError')
-__version__ = '1.0.1'
+__version__ = '1.1'
 
 PARENT_LOGGER = __name__
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -120,7 +120,7 @@ class ZabbixAPI(object):
     SORT_DESC = 'DESC'
 
     def __init__(self, server='http://localhost/zabbix', user=None, passwd=None, log_level=WARNING, timeout=10,
-                 relogin_interval=60, r_query_len=10):
+                 relogin_interval=30, r_query_len=10):
         """
         Create an API object. We're going to use proto://server/path to find the JSON-RPC api.
 
@@ -346,8 +346,8 @@ class ZabbixAPI(object):
 
         try:
             return self.do_request(self.json_obj(method, params=params))
-        except ZabbixAPIException as ex:
-            if self.relogin_enabled and str(ex).find('Not authorized while sending') >= 0:
+        except ZabbixAPIError as ex:
+            if self.relogin_interval and ex.error['data'] == 'Not authorized':
                 self.log(WARNING, 'Zabbix API not logged in (%s). Performing Zabbix API relogin', ex)
                 self.relogin()  # Will raise exception in case of login error
                 return self.do_request(self.json_obj(method, params=params))
