@@ -35,6 +35,7 @@ from hashlib import md5
 from base64 import b64encode
 from time import time
 import re
+import ssl
 
 try:
     # noinspection PyPackageRequirements
@@ -49,7 +50,7 @@ except ImportError:
     import urllib.request as urllib2  # python3
 
 __all__ = ('ZabbixAPI', 'ZabbixAPIException', 'ZabbixAPIError')
-__version__ = '1.1'
+__version__ = '1.2'
 
 PARENT_LOGGER = __name__
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -120,7 +121,7 @@ class ZabbixAPI(object):
     SORT_DESC = 'DESC'
 
     def __init__(self, server='http://localhost/zabbix', user=None, passwd=None, log_level=WARNING, timeout=10,
-                 relogin_interval=30, r_query_len=10):
+                 relogin_interval=30, r_query_len=10, ssl_verify=True):
         """
         Create an API object. We're going to use proto://server/path to find the JSON-RPC api.
 
@@ -141,6 +142,7 @@ class ZabbixAPI(object):
         self.timeout = timeout
         self.relogin_interval = relogin_interval
         self.r_query = deque(maxlen=r_query_len)
+        self.ssl_verify = ssl_verify
         self.init()
 
     def __repr__(self):
@@ -162,7 +164,16 @@ class ZabbixAPI(object):
         proto = self.server.split('://')[0]
 
         if proto == 'https':
-            self._http_handler = urllib2.HTTPSHandler(debuglevel=0)
+            context = ssl.create_default_context()
+
+            if self.ssl_verify:
+                context.check_hostname = True
+                context.verify_mode = ssl.CERT_REQUIRED
+            else:
+                context.check_hostname = False
+                context.verify_mode = ssl.CERT_NONE
+
+            self._http_handler = urllib2.HTTPSHandler(debuglevel=0, context=context)
         elif proto == 'http':
             self._http_handler = urllib2.HTTPHandler(debuglevel=0)
         else:
