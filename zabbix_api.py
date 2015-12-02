@@ -50,7 +50,7 @@ except ImportError:
     import urllib.request as urllib2  # python3
 
 __all__ = ('ZabbixAPI', 'ZabbixAPIException', 'ZabbixAPIError')
-__version__ = '1.2'
+__version__ = '1.2.2'
 
 PARENT_LOGGER = __name__
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -131,6 +131,7 @@ class ZabbixAPI(object):
         :param int log_level: Logging level
         :param int timeout: Timeout for HTTP requests to api (in seconds)
         :param int r_query_len: Max length of query history
+        :param bool ssl_verify: Whether to perform HTTPS certificate verification (only for python >= 2.7.9)
         :param int relogin_interval: Minimum time (in seconds) after which an automatic re-login is performed; \
          Can be set to None to disable automatic re-logins
         """
@@ -164,16 +165,19 @@ class ZabbixAPI(object):
         proto = self.server.split('://')[0]
 
         if proto == 'https':
-            context = ssl.create_default_context()
+            if hasattr(ssl, 'create_default_context'):
+                context = ssl.create_default_context()
 
-            if self.ssl_verify:
-                context.check_hostname = True
-                context.verify_mode = ssl.CERT_REQUIRED
+                if self.ssl_verify:
+                    context.check_hostname = True
+                    context.verify_mode = ssl.CERT_REQUIRED
+                else:
+                    context.check_hostname = False
+                    context.verify_mode = ssl.CERT_NONE
+
+                self._http_handler = urllib2.HTTPSHandler(debuglevel=0, context=context)
             else:
-                context.check_hostname = False
-                context.verify_mode = ssl.CERT_NONE
-
-            self._http_handler = urllib2.HTTPSHandler(debuglevel=0, context=context)
+                self._http_handler = urllib2.HTTPSHandler(debuglevel=0)
         elif proto == 'http':
             self._http_handler = urllib2.HTTPHandler(debuglevel=0)
         else:
