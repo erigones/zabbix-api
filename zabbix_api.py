@@ -8,8 +8,8 @@ LGPL 2.1   http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
 Zabbix API Python Library.
 Original Ruby Library is Copyright (C) 2009 Andrew Nelson nelsonab(at)red-tux(dot)net
 Python Library is Copyright (C) 2009 Brett Lentz brett.lentz(at)gmail(dot)com
-                  Copyright (C) 2013-2015 Erigones, s. r. o. erigones(at)erigones(dot)com
                   Copyright (C) 2014-2015 https://github.com/gescheit/scripts
+                  Copyright (C) 2013-2016 Erigones, s. r. o. erigones(at)erigones(dot)com
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -50,7 +50,7 @@ except ImportError:
     import urllib.request as urllib2  # python3
 
 __all__ = ('ZabbixAPI', 'ZabbixAPIException', 'ZabbixAPIError')
-__version__ = '1.2.2'
+__version__ = '1.2.3'
 
 PARENT_LOGGER = __name__
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -119,6 +119,12 @@ class ZabbixAPI(object):
 
     SORT_ASC = 'ASC'
     SORT_DESC = 'DESC'
+
+    LOGIN_ERRORS = (
+        'Not authorized',
+        'Session terminated',
+        're-login, please',
+    )
 
     def __init__(self, server='http://localhost/zabbix', user=None, passwd=None, log_level=WARNING, timeout=10,
                  relogin_interval=30, r_query_len=10, ssl_verify=True):
@@ -362,7 +368,7 @@ class ZabbixAPI(object):
         try:
             return self.do_request(self.json_obj(method, params=params))
         except ZabbixAPIError as ex:
-            if self.relogin_interval and ex.error['data'] == 'Not authorized':
+            if self.relogin_interval and any(i in ex.error['data'] for i in self.LOGIN_ERRORS):
                 self.log(WARNING, 'Zabbix API not logged in (%s). Performing Zabbix API relogin', ex)
                 self.relogin()  # Will raise exception in case of login error
                 return self.do_request(self.json_obj(method, params=params))

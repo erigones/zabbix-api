@@ -6,7 +6,7 @@ zabbix-api-erigones
 Used by the `Ludolph Monitoring Jabber Bot <https://github.com/erigones/Ludolph>`_.
 
 * Supported Python versions: >= 2.6 and >= 3.2
-* Supported Zabbix versions: 1.8, 2.0, 2.2, 2.4
+* Supported Zabbix versions: 1.8, 2.0, 2.2, 2.4, 3.0
 
 .. image:: https://badge.fury.io/py/zabbix-api-erigones.png
     :target: http://badge.fury.io/py/zabbix-api-erigones
