@@ -40,7 +40,7 @@ setup(
     long_description=read('README.rst'),
     url='https://github.com/erigones/zabbix-api/',
     author='Erigones',
-    author_email='erigones [at] erigones.com',
+    author_email='erigones@erigones.com',
     license='LGPL',
     py_modules=['zabbix_api'],
     platforms='any',
