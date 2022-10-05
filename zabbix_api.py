@@ -34,6 +34,7 @@ from datetime import datetime
 from hashlib import md5
 from base64 import b64encode
 from time import time
+from packaging import version
 import re
 import ssl
 
@@ -327,7 +328,10 @@ class ZabbixAPI(object):
         # Don't print the raw password
         hashed_pw_string = 'md5(%s)' % md5(password.encode('utf-8')).hexdigest()
         self.debug('Trying to login with %r:%r', user, hashed_pw_string)
-        obj = self.json_obj('user.login', params={'user': user, 'password': password}, auth=False)
+        if version.parse(self.api_version()) >= version.parse('5.4'):
+            obj = self.json_obj('user.login', params={'username': user, 'password': password}, auth=False)
+        else:
+            obj = self.json_obj('user.login', params={'user': user, 'password': password}, auth=False)
         self.__auth = self.do_request(obj)
 
     def relogin(self):
